@@ -9,8 +9,11 @@ class Nav2App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: HomeScreen(),
+    return MaterialApp(
+      routes: {
+        '/': (context) => const HomeScreen(),
+        '/details': (context) => const DetailScreen(),
+      },
     );
   }
 }
@@ -26,11 +29,9 @@ class HomeScreen extends StatelessWidget {
         child: TextButton(
           child: const Text('View Details'),
           onPressed: () {
-            Navigator.push(
+            Navigator.pushNamed(
               context,
-              MaterialPageRoute(builder: (context) {
-                return const DetailScreen();
-              }),
+              '/details',
             );
           },
         ),
