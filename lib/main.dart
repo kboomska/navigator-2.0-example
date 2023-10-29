@@ -143,6 +143,8 @@ class BookRouterDelegate extends RouterDelegate<BookRoutePath>
     Book('Kindred', 'Octavia E. Butler'),
   ];
 
+  TransitionDelegate transitionDelegate = NoAnimationTransitionDelegate();
+
   BookRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>();
 
   void _handleBookTapped(Book book) {
@@ -154,6 +156,7 @@ class BookRouterDelegate extends RouterDelegate<BookRoutePath>
   Widget build(BuildContext context) {
     return Navigator(
       key: navigatorKey,
+      transitionDelegate: transitionDelegate,
       pages: [
         MaterialPage(
           key: const ValueKey('BooksListPage'),
@@ -260,6 +263,43 @@ class BookRouteInformationParser extends RouteInformationParser<BookRoutePath> {
       return RouteInformation(location: '/book/${configuration.id}');
     }
     return null;
+  }
+}
+
+// This class only affects the declarative API, which is why the back button
+// still displays a transition animation.
+class NoAnimationTransitionDelegate extends TransitionDelegate<void> {
+  @override
+  Iterable<RouteTransitionRecord> resolve({
+    required List<RouteTransitionRecord> newPageRouteHistory,
+    required Map<RouteTransitionRecord?, RouteTransitionRecord>
+        locationToExitingPageRoute,
+    required Map<RouteTransitionRecord?, List<RouteTransitionRecord>>
+        pageRouteToPagelessRoutes,
+  }) {
+    final results = <RouteTransitionRecord>[];
+
+    for (final pageRoute in newPageRouteHistory) {
+      if (pageRoute.isWaitingForEnteringDecision) {
+        pageRoute.markForAdd();
+      }
+      results.add(pageRoute);
+    }
+
+    for (final exitingPageRoute in locationToExitingPageRoute.values) {
+      if (exitingPageRoute.isWaitingForExitingDecision) {
+        exitingPageRoute.markForRemove();
+        final pagelessRoutes = pageRouteToPagelessRoutes[exitingPageRoute];
+        if (pagelessRoutes != null) {
+          for (final pagelessRoute in pagelessRoutes) {
+            pagelessRoute.markForRemove();
+          }
+        }
+      }
+
+      results.add(exitingPageRoute);
+    }
+    return results;
   }
 }
 
