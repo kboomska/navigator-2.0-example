@@ -19,48 +19,16 @@ class BooksApp extends StatefulWidget {
 }
 
 class _BooksAppState extends State<BooksApp> {
-  Book? _selectedBook;
-
-  List<Book> books = [
-    Book('Left Hand of Darkness', 'Ursula K. Le Guin'),
-    Book('Too Like the Lightning', 'Ada Palmer'),
-    Book('Kindred', 'Octavia E. Butler'),
-  ];
-
-  void _handleBookTapped(Book book) {
-    setState(() {
-      _selectedBook = book;
-    });
-  }
+  final BookRouterDelegate _routerDelegate = BookRouterDelegate();
+  final BookRouteInformationParser _routeInformationParser =
+      BookRouteInformationParser();
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Books App',
-      home: Navigator(
-        pages: [
-          MaterialPage(
-            key: const ValueKey('BooksListPage'),
-            child: BooksListScreen(
-              books: books,
-              onTapped: _handleBookTapped,
-            ),
-          ),
-          if (_selectedBook != null) BookDetailsPage(book: _selectedBook)
-        ],
-        onPopPage: (route, result) {
-          if (!route.didPop(result)) {
-            return false;
-          }
-
-          // Update the list of pages by setting _selectedBook to null
-          setState(() {
-            _selectedBook = null;
-          });
-
-          return true;
-        },
-      ),
+      routerDelegate: _routerDelegate,
+      routeInformationParser: _routeInformationParser,
     );
   }
 }
