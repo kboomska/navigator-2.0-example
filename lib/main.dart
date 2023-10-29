@@ -10,9 +10,21 @@ class Nav2App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      routes: {
-        '/': (context) => const HomeScreen(),
-        '/details': (context) => const DetailScreen(),
+      onGenerateRoute: (settings) {
+        // Handle '/'
+        if (settings.name == '/') {
+          return MaterialPageRoute(builder: (context) => const HomeScreen());
+        }
+
+        // Handle '/details/:id'
+        final uri = Uri.parse(settings.name ?? '');
+        if (uri.pathSegments.length == 2 &&
+            uri.pathSegments.first == 'details') {
+          final id = uri.pathSegments[1];
+          return MaterialPageRoute(builder: (context) => DetailScreen(id: id));
+        }
+
+        return MaterialPageRoute(builder: (context) => const UnknownScreen());
       },
     );
   }
@@ -31,7 +43,7 @@ class HomeScreen extends StatelessWidget {
           onPressed: () {
             Navigator.pushNamed(
               context,
-              '/details',
+              '/details/1',
             );
           },
         ),
@@ -41,19 +53,44 @@ class HomeScreen extends StatelessWidget {
 }
 
 class DetailScreen extends StatelessWidget {
-  const DetailScreen({super.key});
+  final String id;
+
+  const DetailScreen({
+    super.key,
+    required this.id,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
       body: Center(
-        child: TextButton(
-          child: const Text('Pop!'),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Viewing details for item $id'),
+            TextButton(
+              child: const Text('Pop!'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class UnknownScreen extends StatelessWidget {
+  const UnknownScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: const Center(
+        child: Text('404!'),
       ),
     );
   }
