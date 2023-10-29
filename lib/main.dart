@@ -100,30 +100,12 @@ class BookDetailsPage extends Page {
     required this.book,
   }) : super(key: ValueKey(book));
 
-  // @override
-  // Route createRoute(BuildContext context) {
-  //   return MaterialPageRoute(
-  //     settings: this,
-  //     builder: (BuildContext context) {
-  //       return BookDetailsScreen(book: book);
-  //     },
-  //   );
-  // }
-
   @override
   Route createRoute(BuildContext context) {
-    return PageRouteBuilder(
+    return MaterialPageRoute(
       settings: this,
-      pageBuilder: (context, animation, animation2) {
-        final tween = Tween(begin: const Offset(0.0, 1.0), end: Offset.zero);
-        final curveTween = CurveTween(curve: Curves.easeInOut);
-        return SlideTransition(
-          position: animation.drive(curveTween).drive(tween),
-          child: BookDetailsScreen(
-            key: ValueKey(book),
-            book: book,
-          ),
-        );
+      builder: (BuildContext context) {
+        return BookDetailsScreen(book: book);
       },
     );
   }
@@ -161,4 +143,23 @@ class BookDetailsScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class BookRoutePath {
+  final int? id;
+  final bool isUnknown;
+
+  BookRoutePath.home()
+      : id = null,
+        isUnknown = false;
+
+  BookRoutePath.details(this.id) : isUnknown = false;
+
+  BookRoutePath.unknown()
+      : id = null,
+        isUnknown = true;
+
+  bool get isHomePage => id == null;
+
+  bool get isDetailsPage => id != null;
 }
