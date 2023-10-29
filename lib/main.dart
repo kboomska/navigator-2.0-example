@@ -163,3 +163,107 @@ class BookRoutePath {
 
   bool get isDetailsPage => id != null;
 }
+
+class BookRouterDelegate extends RouterDelegate<BookRoutePath>
+    with ChangeNotifier, PopNavigatorRouterDelegateMixin<BookRoutePath> {
+  Book? _selectedBook;
+  bool show404 = false;
+
+  List<Book> books = [
+    Book('Left Hand of Darkness', 'Ursula K. Le Guin'),
+    Book('Too Like the Lightning', 'Ada Palmer'),
+    Book('Kindred', 'Octavia E. Butler'),
+  ];
+
+  BookRouterDelegate() : navigatorKey = GlobalKey<NavigatorState>();
+
+  void _handleBookTapped(Book book) {
+    _selectedBook = book;
+    notifyListeners();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Navigator(
+      key: navigatorKey,
+      pages: [
+        MaterialPage(
+          key: const ValueKey('BooksListPage'),
+          child: BooksListScreen(
+            books: books,
+            onTapped: _handleBookTapped,
+          ),
+        ),
+        if (show404)
+          const MaterialPage(
+            key: ValueKey('UnknownPage'),
+            child: UnknownScreen(),
+          )
+        else if (_selectedBook != null)
+          BookDetailsPage(book: _selectedBook)
+      ],
+      onPopPage: (route, result) {
+        if (!route.didPop(result)) {
+          return false;
+        }
+
+        // Update the list of pages by setting _selectedBook to null
+        _selectedBook = null;
+        show404 = false;
+        notifyListeners();
+
+        return true;
+      },
+    );
+  }
+
+  @override
+  final GlobalKey<NavigatorState> navigatorKey;
+
+  @override
+  BookRoutePath get currentConfiguration {
+    if (show404) {
+      return BookRoutePath.unknown();
+    }
+
+    return _selectedBook == null
+        ? BookRoutePath.home()
+        : BookRoutePath.details(books.indexOf(_selectedBook!));
+  }
+
+  @override
+  Future<void> setNewRoutePath(BookRoutePath configuration) async {
+    if (configuration.isUnknown) {
+      _selectedBook = null;
+      show404 = true;
+      return;
+    }
+
+    if (configuration.isDetailsPage) {
+      if (configuration.id! < 0 || configuration.id! > books.length - 1) {
+        show404 = true;
+        return;
+      }
+
+      _selectedBook = books[configuration.id!];
+    } else {
+      _selectedBook = null;
+    }
+
+    show404 = false;
+  }
+}
+
+class UnknownScreen extends StatelessWidget {
+  const UnknownScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: const Center(
+        child: Text('404!'),
+      ),
+    );
+  }
+}
