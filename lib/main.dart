@@ -19,9 +19,23 @@ class BooksApp extends StatefulWidget {
 }
 
 class _BooksAppState extends State<BooksApp> {
+  Book? _selectedBook;
+  bool show404 = false;
+  List<Book> books = [
+    Book('Left Hand of Darkness', 'Ursula K. Le Guin'),
+    Book('Too Like the Lightning', 'Ada Palmer'),
+    Book('Kindred', 'Octavia E. Butler'),
+  ];
+
   @override
   void initState() {
     super.initState();
+  }
+
+  void _handleBookTapped(Book book) {
+    setState(() {
+      _selectedBook = book;
+    });
   }
 
   @override
@@ -29,13 +43,44 @@ class _BooksAppState extends State<BooksApp> {
     return MaterialApp(
       title: 'Books App',
       home: Navigator(
-        pages: const [
+        pages: [
           MaterialPage(
-            key: ValueKey('BooksListPage'),
-            child: Scaffold(),
-          )
+            key: const ValueKey('BooksListPage'),
+            child: BooksListScreen(
+              books: books,
+              onTapped: _handleBookTapped,
+            ),
+          ),
         ],
         onPopPage: (route, result) => route.didPop(result),
+      ),
+    );
+  }
+}
+
+class BooksListScreen extends StatelessWidget {
+  final List<Book> books;
+  final ValueChanged<Book> onTapped;
+
+  const BooksListScreen({
+    super.key,
+    required this.books,
+    required this.onTapped,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: ListView(
+        children: [
+          for (Book book in books)
+            ListTile(
+              title: Text(book.title),
+              subtitle: Text(book.author),
+              onTap: () => onTapped(book),
+            )
+        ],
       ),
     );
   }
